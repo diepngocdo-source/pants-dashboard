@@ -2010,7 +2010,7 @@ function renderCatSection() {
     const fireHtml = p.salesNum>=3000?`<span class="sales-fire">🔥 ${p.sales}</span>`:'';
     return `<div class="cat-prod-card" data-cat="${p.cat}">
       <div class="cat-prod-img" style="background:${bg}">
-        <img src="${p.imgUrl}" alt="${p.name}" onerror="this.style.display='none'" loading="lazy">
+        <img src="${p.imgUrl}" alt="${p.name}" loading="lazy" style="width:100%;height:100%;object-fit:contain" onerror="this.outerHTML='<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\' viewBox=\'0 0 160 160\'><defs><linearGradient id=\'cg${p.rank}\' x1=\'0\' y1=\'0\' x2=\'1\' y2=\'1\'><stop offset=\'0%\' stop-color=\'${getGrad(p)[0]}\'/><stop offset=\'100%\' stop-color=\'${getGrad(p)[1]}\'/></linearGradient></defs><rect width=\'160\' height=\'160\' fill=\'url(#cg${p.rank})\'/><text x=\'80\' y=\'95\' text-anchor=\'middle\' font-size=\'48\'>${p.icon}</text></svg>'">
         ${fireHtml}
       </div>
       <div class="cat-prod-body">
@@ -2019,7 +2019,7 @@ function renderCatSection() {
           <span style="font-size:10px;color:#9ca3af">${p.platform.includes('amazon')?'Amazon':p.platform==='temu'?'Temu':'Brand'}</span>
         </div>
         <div class="cat-prod-brand">${p.brand}</div>
-        <div class="cat-prod-name">${p.name}</div>
+        <div class="cat-prod-name"><a href="${p.url||'#'}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#93c5fd">${p.name}</a></div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
           <span class="cat-prod-price">$${p.price.toFixed(2)}</span>
           <span>
@@ -2070,9 +2070,11 @@ function renderBestWorst() {
     <div style="font-size:12px;font-weight:700;color:${col};margin-bottom:8px">${label}</div>
     ${arr.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 8px;background:#f9fafb;border-radius:8px">
       <span style="font-size:13px;font-weight:800;color:#9ca3af;min-width:18px">${i+1}</span>
-      <img src="${p.imgUrl}" style="width:36px;height:36px;border-radius:6px;object-fit:contain;background:#f8f5f9" onerror="this.style.display='none'">
+      <div style="width:36px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#f8f5f9">
+        <img src="${p.imgUrl}" style="width:36px;height:36px;object-fit:contain;display:block" onerror="this.closest('div').innerHTML='<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><defs><linearGradient id=\'g${p.rank}\' x1=\'0\' y1=\'0\' x2=\'1\' y2=\'1\'><stop offset=\'0%\' stop-color=\'${getGrad(p)[0]}\'/><stop offset=\'100%\' stop-color=\'${getGrad(p)[1]}\'/></linearGradient></defs><rect width=\'36\' height=\'36\' fill=\'url(#g${p.rank})\'/><text x=\'18\' y=\'22\' text-anchor=\'middle\' font-size=\'16\'>${p.icon}</text></svg>'">
+      </div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:11px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name.slice(0,38)}…</div>
+        <div style="font-size:11px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><a href="${p.url||'#'}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#93c5fd">${p.name.slice(0,38)}…</a></div>
         <div style="font-size:10px;color:#9ca3af">${p.platform.includes('amazon')?'Amazon':p.platform==='temu'?'Temu':'Brand'}</div>
         <div style="font-size:11px;color:#f59e0b">★ ${p.rating} <span style="color:#9ca3af">${p.reviews.toLocaleString()} reviews</span></div>
       </div>
@@ -2219,17 +2221,17 @@ function renderSocial() {
     </div>`).join('');
 
   const viral = [
-    {name:'Lululemon Align Wide-Leg',platform:'IG','views':'5.1M',type:'Brand Native',icon:'🍋'},
-    {name:'ODODOS Capri Pants Try-On',platform:'TikTok','views':'4.8M',type:'Mega Viral',icon:'🏃'},
-    {name:'Cargo Pants GRWM Haul',platform:'TikTok','views':'3.6M',type:'Creator Viral',icon:'🧳'},
-    {name:'Betabrand Dress Yoga Pants',platform:'FB','views':'2.9M',type:'FB Ad Hit',icon:'💼'},
-    {name:'Wide Leg Denim Styling',platform:'IG','views':'2.4M',type:'Style Viral',icon:'🫙'},
+    {name:'Lululemon Align Wide-Leg',url:'https://www.lululemon.com/en-us/p/align-high-rise-wide-leg-pants-28/',platform:'IG','views':'5.1M',type:'Brand Native',icon:'🍋'},
+    {name:'ODODOS Capri Pants Try-On',url:'https://www.amazon.com/dp/B0CL4LV4VV',platform:'TikTok','views':'4.8M',type:'Mega Viral',icon:'🏃'},
+    {name:'Cargo Pants GRWM Haul',url:'https://www.columbia.com/c/women-pants/',platform:'TikTok','views':'3.6M',type:'Creator Viral',icon:'🧳'},
+    {name:'Betabrand Dress Yoga Pants',url:'https://www.betabrand.com',platform:'FB','views':'2.9M',type:'FB Ad Hit',icon:'💼'},
+    {name:'Wide Leg Denim Styling',url:'https://www.amazon.com/s?k=wide+leg+denim+pants+women',platform:'IG','views':'2.4M',type:'Style Viral',icon:'🫙'},
   ];
   document.getElementById('viralProducts').innerHTML = viral.map(v=>`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px;background:white;border-radius:8px">
       <div style="font-size:22px">${v.icon}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.name}</div>
+        <div style="font-size:12px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><a href="${v.url||'#'}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#93c5fd">${v.name}</a></div>
         <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
           <span style="font-size:10px;color:#6b7280">${v.platform}</span>
           <span style="font-size:10px;font-weight:700;color:#1e3a5f">👁 ${v.views}</span>
@@ -2282,12 +2284,12 @@ function renderSocial() {
 
   // Top social posts
   const posts = [
-    {avatar:'👗',name:'@widelegfashion',time:'2 days ago',plat:'ig',sponsored:true,body:'OK ladies I need to talk about these wide leg pants from Lululemon 👇\n\nI\'m 5\'4" and I was TERRIFIED. But the high rise + stretch fabric means they actually STAY UP and look incredible on petite frames!\n\nLink in bio — they sell out constantly so grab your size now ✨',product:'Lululemon Align Wide-Leg',price:'$118.00',likes:'52.3K',comments:'8.7K',shares:'6.2K',badge:'🔥 #1 Wide Leg Post 2026',why:'Why it worked: Size anxiety + try-on footage + petite body type validation = highest engagement in pants category 2026'},
-    {avatar:'🏃',name:'@gymfits_daily',time:'4 days ago',plat:'tt',sponsored:false,body:'POV: you find yoga pants that are ACTUALLY opaque, have REAL pockets, AND cost under $25 🤯\n\nFengbay 2-pack has been my obsession for 2 months. Wore them to the gym, to brunch, to WFH — no one knows the difference\n\n#yogapants #gymoutfit #affordablefashion',product:'Fengbay 2 Pack Yoga Pants',price:'$18.99',likes:'44.1K',comments:'9.2K',shares:'5.8K',badge:'💪 TikTok Fitness Viral',why:'Why it worked: Price shock + versatility proof + opacity test video = 44K likes and 4.8M views'},
-    {avatar:'💼',name:'Betabrand Official ✓',time:'Sponsored',plat:'fb',sponsored:true,body:'📋 "5 Signs You Need Dress Pant Yoga Pants"\n\n1. You stretch at your desk and your pants don\'t move with you\n2. You rush from yoga to a meeting\n3. You sit in meetings for 3+ hours\n4. You want to look polished but feel comfortable\n5. You\'re tired of uncomfortable work pants\n\nOver 2 million women have switched. ➡ Free 60-day trial\n\nShop now →',product:'Betabrand Dress Yoga Pants',price:'$79.00',likes:'28.4K',comments:'11.2K',shares:'7.9K',badge:'📘 Educational Format Win',why:'Why it worked: "5 signs" listicle drives high comments — readers tag friends and share to women\'s Facebook groups'},
-    {avatar:'🫙',name:'@jeansover30',time:'1 week ago',plat:'ig',sponsored:false,body:'I turned 35 and suddenly NONE of my jeans fit the same 😩\n\nBut then I found these wide leg high waist jeans from Astylish and HOLY MOLY — elastic waist, stretch denim, super flattering\n\n$33 on Amazon and they look like $150 jeans. Linking below 👇\n\n#jeans #over30fashion #widelegjeans',product:'Astylish Wide Leg Jeans',price:'$41.99',likes:'36.8K',comments:'7.4K',shares:'4.1K',badge:'⭐ Organic Viral',why:'Why it worked: Age-related fit anxiety + budget comparison + authentic UGC = 7.1% engagement, 36K likes'},
-    {avatar:'🧳',name:'@outdoorstyle',time:'3 days ago',plat:'tt',sponsored:false,body:'My GRWM for a day hike that turns into dinner 🏔️🍷\n\nCargo pants that are actually CUTE? Columbia Silver Ridge convertibles check EVERY box:\n✅ Zip-off legs\n✅ UPF 50+\n✅ Doesn\'t look "hiking"\n\nLink in bio #cargopants #outdoorootd #hikingfashion',product:'Columbia Silver Ridge Convertible',price:'$65.00',likes:'29.6K',comments:'5.1K',shares:'3.4K',badge:'🏔️ Outdoor Viral',why:'Why it worked: "Hike-to-dinner" versatility narrative + convertible feature demo = top-performing outdoor pants content 2026'},
-    {avatar:'👑',name:'NYDJ Official ✓',time:'Sponsored',plat:'fb',sponsored:true,body:'Every woman deserves pants that look amazing AND feel comfortable ALL day.\n\nOur Lift & Tuck Technology gently smooths, flattens, and lifts — so you can focus on your day, not your waistband.\n\n"I\'ve worn NYDJ for 5 years. Nothing else fits my curves this well." — Susan, 52\n\n✅ Over 9,800 5-star reviews\n✅ Petite, Regular & Plus sizes\n✅ Free returns',product:'NYDJ Sculpt-n-Hold Pull-On',price:'$59.00',likes:'24.2K',comments:'6.8K',shares:'5.1K',badge:'💎 Premium Brand Win',why:'Why it worked: Testimonial + Lift & Tuck tech proof + size inclusivity = top premium pants conversion rate in 35–55 segment'},
+    {avatar:'👗',name:'@widelegfashion',time:'2 days ago',plat:'ig',sponsored:true,body:'OK ladies I need to talk about these wide leg pants from Lululemon 👇\n\nI\'m 5\'4" and I was TERRIFIED. But the high rise + stretch fabric means they actually STAY UP and look incredible on petite frames!\n\nLink in bio — they sell out constantly so grab your size now ✨',product:'Lululemon Align Wide-Leg',purl:'https://www.lululemon.com/en-us/p/align-high-rise-wide-leg-pants-28/',price:'$118.00',likes:'52.3K',comments:'8.7K',shares:'6.2K',badge:'🔥 #1 Wide Leg Post 2026',why:'Why it worked: Size anxiety + try-on footage + petite body type validation = highest engagement in pants category 2026'},
+    {avatar:'🏃',name:'@gymfits_daily',time:'4 days ago',plat:'tt',sponsored:false,body:'POV: you find yoga pants that are ACTUALLY opaque, have REAL pockets, AND cost under $25 🤯\n\nFengbay 2-pack has been my obsession for 2 months. Wore them to the gym, to brunch, to WFH — no one knows the difference\n\n#yogapants #gymoutfit #affordablefashion',product:'Fengbay 2 Pack Yoga Pants',purl:'https://www.amazon.com/s?k=fengbay+yoga+pants',price:'$18.99',likes:'44.1K',comments:'9.2K',shares:'5.8K',badge:'💪 TikTok Fitness Viral',why:'Why it worked: Price shock + versatility proof + opacity test video = 44K likes and 4.8M views'},
+    {avatar:'💼',name:'Betabrand Official ✓',time:'Sponsored',plat:'fb',sponsored:true,body:'📋 "5 Signs You Need Dress Pant Yoga Pants"\n\n1. You stretch at your desk and your pants don\'t move with you\n2. You rush from yoga to a meeting\n3. You sit in meetings for 3+ hours\n4. You want to look polished but feel comfortable\n5. You\'re tired of uncomfortable work pants\n\nOver 2 million women have switched. ➡ Free 60-day trial\n\nShop now →',product:'Betabrand Dress Yoga Pants',purl:'https://www.betabrand.com',price:'$79.00',likes:'28.4K',comments:'11.2K',shares:'7.9K',badge:'📘 Educational Format Win',why:'Why it worked: "5 signs" listicle drives high comments — readers tag friends and share to women\'s Facebook groups'},
+    {avatar:'🫙',name:'@jeansover30',time:'1 week ago',plat:'ig',sponsored:false,body:'I turned 35 and suddenly NONE of my jeans fit the same 😩\n\nBut then I found these wide leg high waist jeans from Astylish and HOLY MOLY — elastic waist, stretch denim, super flattering\n\n$33 on Amazon and they look like $150 jeans. Linking below 👇\n\n#jeans #over30fashion #widelegjeans',product:'Astylish Wide Leg Jeans',purl:'https://www.amazon.com/dp/B0C3WBYGRM',price:'$41.99',likes:'36.8K',comments:'7.4K',shares:'4.1K',badge:'⭐ Organic Viral',why:'Why it worked: Age-related fit anxiety + budget comparison + authentic UGC = 7.1% engagement, 36K likes'},
+    {avatar:'🧳',name:'@outdoorstyle',time:'3 days ago',plat:'tt',sponsored:false,body:'My GRWM for a day hike that turns into dinner 🏔️🍷\n\nCargo pants that are actually CUTE? Columbia Silver Ridge convertibles check EVERY box:\n✅ Zip-off legs\n✅ UPF 50+\n✅ Doesn\'t look "hiking"\n\nLink in bio #cargopants #outdoorootd #hikingfashion',product:'Columbia Silver Ridge Convertible',purl:'https://www.columbia.com',price:'$65.00',likes:'29.6K',comments:'5.1K',shares:'3.4K',badge:'🏔️ Outdoor Viral',why:'Why it worked: "Hike-to-dinner" versatility narrative + convertible feature demo = top-performing outdoor pants content 2026'},
+    {avatar:'👑',name:'NYDJ Official ✓',time:'Sponsored',plat:'fb',sponsored:true,body:'Every woman deserves pants that look amazing AND feel comfortable ALL day.\n\nOur Lift & Tuck Technology gently smooths, flattens, and lifts — so you can focus on your day, not your waistband.\n\n"I\'ve worn NYDJ for 5 years. Nothing else fits my curves this well." — Susan, 52\n\n✅ Over 9,800 5-star reviews\n✅ Petite, Regular & Plus sizes\n✅ Free returns',product:'NYDJ Sculpt-n-Hold Pull-On',purl:'https://nydj.com',price:'$59.00',likes:'24.2K',comments:'6.8K',shares:'5.1K',badge:'💎 Premium Brand Win',why:'Why it worked: Testimonial + Lift & Tuck tech proof + size inclusivity = top premium pants conversion rate in 35–55 segment'},
   ];
   document.getElementById('topSocialPosts').innerHTML = posts.map(p=>{
     const platLabel = p.plat==='tt'?'TikTok':p.plat==='fb'?'Facebook':'Instagram';
@@ -2303,8 +2305,8 @@ function renderSocial() {
       </div>
       <div class="post-body">${p.body.replace(/\n/g,'<br>')}</div>
       <div class="post-product-link">
-        <span style="font-weight:600;color:#1e3a5f">${p.product}</span>
-        <span style="color:#059669;font-weight:700">${p.price} &rarr; Shop now</span>
+        <a href="${p.purl||'#'}" target="_blank" rel="noopener" style="font-weight:600;color:#1e3a5f;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#93c5fd">${p.product}</a>
+        <a href="${p.purl||'#'}" target="_blank" rel="noopener" style="color:#059669;font-weight:700;text-decoration:none">${p.price} &rarr; Shop now</a>
       </div>
       <div class="post-stats">
         <div class="post-stat">❤️ ${p.likes}</div>
