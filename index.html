@@ -64,9 +64,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* PRODUCT CARD */
 .prod-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); transition: all .18s; }
 .prod-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-.prod-img-wrap { position: relative; height: 175px; overflow: hidden; background: #f1f5f9; }
-.prod-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-.prod-img-wrap .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+.prod-img-wrap { position: relative; height: 175px; overflow: hidden; background: #f8f5f9; }
+.prod-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; background: #f8f5f9; }
+.prod-img-wrap .placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; flex-direction: column; gap: 6px; }
 .prod-rank { position: absolute; top: 7px; left: 7px; background: rgba(15,23,42,.65); color: #fff; border-radius: 20px; padding: 2px 8px; font-size: .68rem; font-weight: 700; }
 .prod-badge { position: absolute; top: 7px; right: 7px; border-radius: 4px; padding: 2px 6px; font-size: .63rem; font-weight: 800; }
 .badge-bsr { background: #f97316; color: #fff; }
@@ -547,16 +547,15 @@ function amazonCard(p) {
 
 function temuCard(p, gender) {
   const icon = gender === 'women' ? '\u{1F457}' : '\u{1F454}';
-  const grad = gender === 'women'
-    ? 'linear-gradient(135deg, #FF5722 0%, #FF9800 100%)'
-    : 'linear-gradient(135deg, #FF5722 0%, #e91e63 100%)';
+  const bgCol = gender === 'women' ? '#fff1f0' : '#fff0f6';
+  const accentCol = gender === 'women' ? '#FF5722' : '#e91e63';
   const ordersSpan = p.orders && p.orders !== '—' ? '<span>· \u{1F4E6} ' + p.orders + ' orders</span>' : '';
   const temuUrl = gender === 'women'
     ? 'https://www.temu.com/c/womens-pants-o4-30.html'
     : 'https://www.temu.com/c/mens-cargo-pants-o4-1644.html';
   return '<div class="prod-card">'
-    + '<div class="prod-img-wrap" style="background:' + grad + '">'
-    + '<div class="placeholder">' + icon + '</div>'
+    + '<div class="prod-img-wrap" style="background:' + bgCol + '">'
+    + '<div class="placeholder" style="flex-direction:column;gap:4px"><span style="font-size:2.8rem">' + icon + '</span><span style="font-size:.65rem;font-weight:700;color:' + accentCol + ';opacity:.8;text-transform:uppercase;letter-spacing:.5px">Temu</span></div>'
     + '<span class="prod-rank" style="background:rgba(255,87,34,.9)">#' + p.rank + '</span>'
     + '</div>'
     + '<div class="prod-body">'
@@ -578,8 +577,8 @@ function brandCard(p) {
     : '<div class="prod-rating" style="font-size:.72rem;color:#9ca3af">Rating not shown on site</div>';
   const noteHtml = p.note ? '<div class="prod-note">✨ ' + p.note + '</div>' : '';
   return '<div class="prod-card">'
-    + '<div class="prod-img-wrap" style="background:linear-gradient(135deg,' + p.bc + '18,' + p.bc + '38);display:flex;align-items:center;justify-content:center">'
-    + '<span style="font-size:1.4rem;font-weight:900;color:' + p.bc + ';text-align:center;padding:8px;letter-spacing:-0.5px">' + p.brand + '</span>'
+    + '<div class="prod-img-wrap" style="background:#f8f5f9">'
+    + '<div class="placeholder" style="flex-direction:column;gap:6px"><span style="font-size:2rem;font-weight:900;color:' + p.bc + ';text-align:center;padding:0 8px;letter-spacing:-0.5px;line-height:1.1">' + p.brand + '</span><span style="font-size:.6rem;font-weight:700;color:' + p.bc + ';opacity:.7;text-transform:uppercase;letter-spacing:.8px">Brand Site</span></div>'
     + '<span class="prod-rank">#' + p.rank + '</span>'
     + '</div>'
     + '<div class="prod-body">'
