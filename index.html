@@ -486,7 +486,7 @@ function makeThumbHTML(p, size=90) {
   if (p.imgUrl) {
     const grad = getGrad(p);
     const svgFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" style="border-radius:8px;display:block"><defs><linearGradient id="tg${size}${p.rank}${p.platform}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${grad[0]}"/><stop offset="100%" stop-color="${grad[1]}"/></linearGradient></defs><rect width="${size}" height="${size}" fill="url(#tg${size}${p.rank}${p.platform})" rx="8"/><text x="${size/2}" y="${size*0.5}" text-anchor="middle" dominant-baseline="central" font-size="${Math.floor(size*0.35)}">${p.icon}</text><text x="${size/2}" y="${size*0.82}" text-anchor="middle" font-size="${Math.max(8,Math.floor(size*0.12))}" fill="white" opacity="0.9" font-family="sans-serif">${p.brand.slice(0,8)}</text></svg>`;
-    return `<img class="prod-thumb" style="width:${size}px;height:${size}px" src="${p.imgUrl}" onerror="this.outerHTML='${svgFallback.replace(/'/g,"&#39;").replace(/"/g,"&#34;")}'" alt="${p.name}">`;
+    return `<img class="prod-thumb" style="width:${size}px;height:${size}px" src="${p.imgUrl}" onerror="this.outerHTML='${svgFallback.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&#34;')}'" alt="${p.name.replace(/"/g,'&quot;')}">`;
   }
   return '';
 }
@@ -494,7 +494,8 @@ function makeThumbHTML(p, size=90) {
 function makeLargeCardSVG(p) {
   const grad = getGrad(p);
   const uid = `cg_${p.rank}_${p.platform}_${p.cat}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="210" height="200" style="display:block"><defs><linearGradient id="${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${grad[0]}"/><stop offset="100%" stop-color="${grad[1]}"/></linearGradient></defs><rect width="210" height="200" fill="url(#${uid})"/><text x="105" y="85" text-anchor="middle" dominant-baseline="central" font-size="60">${p.icon}</text><rect x="0" y="155" width="210" height="45" fill="rgba(0,0,0,0.28)"/><text x="105" y="171" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif" font-weight="600">${p.brand.slice(0,20)}</text><text x="105" y="188" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.85)" font-family="sans-serif">⭐ ${p.rating} · $${p.price.toFixed(2)}</text></svg>`;
+  const safeBrand = p.brand.slice(0,20).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="210" height="200" style="display:block"><defs><linearGradient id="${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${grad[0]}"/><stop offset="100%" stop-color="${grad[1]}"/></linearGradient></defs><rect width="210" height="200" fill="url(#${uid})"/><text x="105" y="85" text-anchor="middle" dominant-baseline="central" font-size="60">${p.icon}</text><rect x="0" y="155" width="210" height="45" fill="rgba(0,0,0,0.28)"/><text x="105" y="171" text-anchor="middle" font-size="11" fill="white" font-family="sans-serif" font-weight="600">${safeBrand}</text><text x="105" y="188" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.85)" font-family="sans-serif">&#x2B50; ${p.rating} $${p.price.toFixed(2)}</text></svg>`;
 }
 
 // ── Render Featured Cards ──
@@ -506,7 +507,7 @@ function renderCards() {
     let imgContent;
     if (p.imgUrl) {
       const svgStr = makeLargeCardSVG(p).replace(/\n/g,'');
-      imgContent = `<img src="${p.imgUrl}" style="width:210px;height:200px;object-fit:contain;background:#f8f5f9;display:block" onerror="this.outerHTML='${svgStr.replace(/'/g,"&#39;").replace(/"/g,"&#34;")}'" alt="${p.name}">`;
+      imgContent = `<img src="${p.imgUrl}" style="width:210px;height:200px;object-fit:contain;background:#f8f5f9;display:block" onerror="this.outerHTML='${svgStr.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&#34;')}'" alt="${p.name.replace(/"/g,'&quot;')}">`;
     } else { imgContent = makeLargeCardSVG(p); }
     return `<div class="product-card">
       <a href="${p.url||'#'}" target="_blank" rel="noopener" style="display:block;text-decoration:none;color:inherit">
