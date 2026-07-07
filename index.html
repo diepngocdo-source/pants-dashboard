@@ -1025,51 +1025,62 @@ async function exportReport(btn) {
     document.body.insertBefore(banner, document.body.firstChild);
     window.scrollTo(0, 0);
 
-    const body = document.body;
-    const fullW = Math.max(body.scrollWidth, document.documentElement.scrollWidth, 1400);
-    const fullH = Math.max(body.scrollHeight, document.documentElement.scrollHeight);
+    // Lock body to fixed width so canvas dimensions are exact integers
+    const RENDER_W = 1400;
+    const prevBodyW  = document.body.style.width;
+    const prevBodyMW = document.body.style.minWidth;
+    document.body.style.setProperty('width',     RENDER_W + 'px', 'important');
+    document.body.style.setProperty('min-width', RENDER_W + 'px', 'important');
+    document.documentElement.style.overflow = 'visible';
+    document.body.style.overflow = 'visible';
+
+    const fullH = document.body.scrollHeight;
 
     btn.innerHTML = '📸 Đang chụp...';
-    const canvas = await window.html2canvas(body, {
-      scale: 1.5,
+    const canvas = await window.html2canvas(document.body, {
+      scale: 1.5,          // canvas.width = 1400×1.5 = 2100 exactly
       useCORS: true,
       allowTaint: true,
       logging: false,
       x: 0, y: 0,
       scrollX: 0, scrollY: 0,
-      width: fullW,
+      width: RENDER_W,
       height: fullH,
-      windowWidth: fullW,
+      windowWidth: RENDER_W,
       windowHeight: fullH,
       backgroundColor: '#ffffff',
-      onclone: doc => { doc.body.style.overflow = 'visible'; }
+      onclone: doc => {
+        doc.body.style.setProperty('width',     RENDER_W + 'px', 'important');
+        doc.body.style.overflow = 'visible';
+        doc.documentElement.style.overflow = 'visible';
+      }
     });
 
+    // Restore body styles
+    document.body.style.width    = prevBodyW;
+    document.body.style.minWidth = prevBodyMW;
+    document.documentElement.style.overflow = '';
     banner.remove();
 
     btn.innerHTML = '📄 Tạo PDF...';
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageW = 210, pageH = 297;
+    const PAGE_W = 210, PAGE_H = 297;
 
-    // Pixels per A4 page at current canvas scale
-    const pageHeightPx = Math.floor(canvas.width * pageH / pageW);
+    // pxPerMm = 2100/210 = 10 exactly → pageHeightPx = 2970 exactly → no rounding drift
+    const pxPerMm = canvas.width / PAGE_W;
+    const pageHeightPx = Math.round(PAGE_H * pxPerMm);
     let srcY = 0, pageNum = 0;
 
     while (srcY < canvas.height) {
       if (pageNum > 0) pdf.addPage();
-
-      // Slice only the pixels for this page
       const sliceH = Math.min(pageHeightPx, canvas.height - srcY);
       const slice = document.createElement('canvas');
       slice.width  = canvas.width;
       slice.height = sliceH;
       slice.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-
-      // Height in mm proportional to slice pixel height
-      const sliceMm = sliceH * pageW / canvas.width;
-      pdf.addImage(slice.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, pageW, sliceMm);
-
+      const sliceMm = sliceH / pxPerMm;   // 297 for full pages, < 297 for last
+      pdf.addImage(slice.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, PAGE_W, sliceMm);
       srcY += sliceH;
       pageNum++;
     }
