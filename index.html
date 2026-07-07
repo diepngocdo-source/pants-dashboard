@@ -169,15 +169,20 @@
 </head>
 <body>
 
-<div class="header">
-  <h1>&#x1F456; Trending Pants Products Dashboard</h1>
-  <p>Amazon Women &middot; Amazon Men &middot; Temu &middot; Brand Sites &mdash; Best Sellers Analysis &middot; July 2026</p>
-  <span style="font-size:11px;opacity:0.75;display:block;margin-top:4px">&#x1F504; Updated: July 1, 2026 &middot; 68 products tracked across 5 categories</span>
-  <div class="header-meta">
-    <span>&#x1F4E6; Amazon Women: Top products by category (July 2026)</span>
-    <span>&#x1F6CD;&#xFE0F; Temu: Trending Pants Category</span>
-    <span>&#x1F310; Lululemon &middot; Columbia &middot; Athleta &middot; Free People &middot; Patagonia &middot; NYDJ</span>
-    <span>&#x1F50D; &ldquo;wide leg pants&rdquo; = 95,000+ searches/week</span>
+<div class="header" style="position:relative">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+    <div>
+      <h1>&#x1F456; Trending Pants Products Dashboard</h1>
+      <p>Amazon Women &middot; Amazon Men &middot; Temu &middot; Brand Sites &mdash; Best Sellers Analysis &middot; July 2026</p>
+      <span style="font-size:11px;opacity:0.75;display:block;margin-top:4px">&#x1F504; Updated: July 1, 2026 &middot; 68 products tracked across 5 categories</span>
+      <div class="header-meta">
+        <span>&#x1F4E6; Amazon Women: Top products by category (July 2026)</span>
+        <span>&#x1F6CD;&#xFE0F; Temu: Trending Pants Category</span>
+        <span>&#x1F310; Lululemon &middot; Columbia &middot; Athleta &middot; Free People &middot; Patagonia &middot; NYDJ</span>
+        <span>&#x1F50D; &ldquo;wide leg pants&rdquo; = 95,000+ searches/week</span>
+      </div>
+    </div>
+    <button onclick="exportReport()" style="background:rgba(255,255,255,0.18);color:white;border:1.5px solid rgba(255,255,255,0.55);padding:10px 20px;border-radius:24px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;margin-top:4px" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">📋 Export Report</button>
   </div>
 </div>
 
@@ -988,6 +993,135 @@ window.addEventListener('DOMContentLoaded', () => {
   renderSocial();
   buildCharts();
 });
+
+// ── Export Report ──────────────────────────────────────
+function exportReport() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const u = new Date(now.getTime() + 7*3600000);
+  const ts = `${pad(u.getUTCDate())}/${pad(u.getUTCMonth()+1)}/${u.getUTCFullYear()} ${pad(u.getUTCHours())}:${pad(u.getUTCMinutes())}:${pad(u.getUTCSeconds())} (GMT+7)`;
+
+  const prods = allProducts;
+  const n = prods.length;
+  const avgRating = (prods.reduce((s,p)=>s+p.rating,0)/n).toFixed(2);
+  const avgPrice  = (prods.reduce((s,p)=>s+p.price,0)/n).toFixed(2);
+  const maxSales  = [...prods].sort((a,b)=>b.salesNum-a.salesNum).filter(p=>p.salesNum>0)[0] || prods[0];
+
+  const platNames = {'amazon-w':'Amazon Women','amazon-m':'Amazon Men',temu:'Temu',brand:'Brand Sites'};
+  const catNames  = {active:'Active',casual:'Casual',smart:'Smart Casual',cargo:'Cargo',jeans:'Jeans'};
+  const accent    = '#1e3a5f';
+
+  const top15 = [...prods].sort((a,b)=>(b.rating*1000+b.reviews)-(a.rating*1000+a.reviews)).slice(0,15);
+  const best5 = top15.slice(0,5);
+  const worst5 = [...prods].sort((a,b)=>(a.rating*1000+a.reviews)-(b.rating*1000+b.reviews)).slice(0,5);
+
+  const platMap = {};
+  prods.forEach(p => {
+    if (!platMap[p.platform]) platMap[p.platform] = {count:0,rSum:0,pSum:0};
+    platMap[p.platform].count++;
+    platMap[p.platform].rSum += p.rating;
+    platMap[p.platform].pSum += p.price;
+  });
+  const catMap = {};
+  prods.forEach(p => { if (!catMap[p.cat]) catMap[p.cat]=[]; catMap[p.cat].push(p); });
+
+  const truncate = (s,n) => s.length>n ? s.slice(0,n)+'…' : s;
+  const stars    = r => '★'.repeat(Math.round(r)) + '☆'.repeat(5-Math.round(r));
+
+  const topRows = top15.map((p,i) => `<tr>
+    <td style="text-align:center;font-weight:700;color:${accent}">${i+1}</td>
+    <td>${truncate(p.name,45)}</td><td>${p.brand}</td>
+    <td>${platNames[p.platform]||p.platform}</td><td>${catNames[p.cat]||p.cat}</td>
+    <td style="text-align:center;color:#f59e0b">${stars(p.rating)} ${p.rating.toFixed(1)}</td>
+    <td style="text-align:right">${p.reviews.toLocaleString()}</td>
+    <td style="text-align:right;font-weight:600">$${p.price.toFixed(2)}</td></tr>`).join('');
+
+  const platRows = Object.entries(platMap).map(([pl,d]) => `<tr>
+    <td>${platNames[pl]||pl}</td><td style="text-align:center">${d.count}</td>
+    <td style="text-align:center;color:#f59e0b">${(d.rSum/d.count).toFixed(2)} ★</td>
+    <td style="text-align:right;font-weight:600">$${(d.pSum/d.count).toFixed(2)}</td></tr>`).join('');
+
+  const catRows = Object.entries(catMap).map(([cat,ps]) => {
+    const top = [...ps].sort((a,b)=>(b.rating*1000+b.reviews)-(a.rating*1000+a.reviews))[0];
+    return `<tr><td>${catNames[cat]||cat}</td><td style="text-align:center">${ps.length}</td>
+    <td>${truncate(top.name,38)}</td><td>${top.brand}</td>
+    <td style="text-align:center;color:#f59e0b">${top.rating.toFixed(1)} ★</td>
+    <td style="text-align:right;font-weight:600">$${top.price.toFixed(2)}</td></tr>`;
+  }).join('');
+
+  const bwRows = (list,color) => list.map((p,i) => `<tr>
+    <td style="text-align:center;font-weight:700;color:${color}">${i+1}</td>
+    <td>${truncate(p.name,42)}</td><td>${p.brand}</td>
+    <td>${platNames[p.platform]||p.platform}</td>
+    <td style="text-align:center;color:#f59e0b">${p.rating.toFixed(1)} ★</td>
+    <td style="text-align:right">${p.reviews.toLocaleString()}</td></tr>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
+<title>Pants Dashboard Report — ${ts}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:11.5px;color:#111;background:#fff}
+.rh{background:linear-gradient(135deg,#1e3a5f 0%,#2d6a8f 100%);color:#fff;padding:28px 36px 24px}
+.rh h1{font-size:21px;font-weight:700;margin-bottom:8px}
+.rh .ts{font-size:13px;background:rgba(255,255,255,.18);display:inline-block;padding:5px 14px;border-radius:20px;font-weight:600;margin-bottom:6px}
+.rh .sub{font-size:11px;opacity:.8}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 36px}
+.kpi{background:#f0f5ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 16px}
+.kpi .val{font-size:21px;font-weight:700;color:#1e3a5f}
+.kpi .lbl{font-size:10.5px;color:#6b7280;margin-top:3px}
+section{margin:0 36px 24px}
+section h2{font-size:14px;font-weight:700;color:#1e3a5f;border-bottom:2px solid #bfdbfe;padding-bottom:6px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:10.5px}
+th{background:#1e3a5f;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+td{padding:5px 8px;border-bottom:1px solid #e8f0fe}
+tr:nth-child(even) td{background:#f0f5ff}
+.footer{text-align:center;font-size:10px;color:#9ca3af;margin:16px 36px 32px;padding-top:12px;border-top:1px solid #e5e7eb}
+@media print{@page{margin:12mm;size:A4}body{font-size:10.5px}.kpis{margin:16px 24px}section{margin:0 24px 18px}}
+</style></head><body>
+<div class="rh">
+  <h1>👖 Trending Pants Products Dashboard — Báo cáo</h1>
+  <div class="ts">📋 Thời điểm xuất: ${ts}</div>
+  <div class="sub">Amazon Women · Amazon Men · Temu · Brand Sites &nbsp;|&nbsp; ${n} sản phẩm được theo dõi</div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="val">${n}</div><div class="lbl">Tổng sản phẩm</div></div>
+  <div class="kpi"><div class="val">★ ${avgRating}</div><div class="lbl">Đánh giá trung bình</div></div>
+  <div class="kpi"><div class="val">$${avgPrice}</div><div class="lbl">Giá trung bình</div></div>
+  <div class="kpi"><div class="val">${maxSales.salesNum>0?maxSales.salesNum.toLocaleString()+'+':maxSales.sales}</div><div class="lbl">Sales cao nhất/tháng<br><small style="color:#1e3a5f">${maxSales.brand}</small></div></div>
+</div>
+<section>
+  <h2>📊 Phân tích theo Platform</h2>
+  <table><thead><tr><th>Platform</th><th style="text-align:center">Số SP</th><th style="text-align:center">Rating TB</th><th style="text-align:right">Giá TB</th></tr></thead>
+  <tbody>${platRows}</tbody></table>
+</section>
+<section>
+  <h2>📂 Phân tích theo Danh mục</h2>
+  <table><thead><tr><th>Danh mục</th><th style="text-align:center">Số SP</th><th>Sản phẩm nổi bật</th><th>Brand</th><th style="text-align:center">Rating</th><th style="text-align:right">Giá</th></tr></thead>
+  <tbody>${catRows}</tbody></table>
+</section>
+<section>
+  <h2>🏆 Top 15 Sản phẩm Best Reviewed</h2>
+  <table><thead><tr><th>#</th><th>Tên sản phẩm</th><th>Brand</th><th>Platform</th><th>Danh mục</th><th style="text-align:center">Rating</th><th style="text-align:right">Reviews</th><th style="text-align:right">Giá</th></tr></thead>
+  <tbody>${topRows}</tbody></table>
+</section>
+<section>
+  <h2 style="color:#16a34a;border-color:#bbf7d0">🥇 Top 5 được đánh giá cao nhất</h2>
+  <table><thead><tr><th style="background:#16a34a">#</th><th style="background:#16a34a">Sản phẩm</th><th style="background:#16a34a">Brand</th><th style="background:#16a34a">Platform</th><th style="background:#16a34a;text-align:center">Rating</th><th style="background:#16a34a;text-align:right">Reviews</th></tr></thead>
+  <tbody>${bwRows(best5,'#16a34a')}</tbody></table>
+</section>
+<section>
+  <h2 style="color:#dc2626;border-color:#fecaca">⚠️ Bottom 5 — Đánh giá thấp nhất</h2>
+  <table><thead><tr><th style="background:#dc2626">#</th><th style="background:#dc2626">Sản phẩm</th><th style="background:#dc2626">Brand</th><th style="background:#dc2626">Platform</th><th style="background:#dc2626;text-align:center">Rating</th><th style="background:#dc2626;text-align:right">Reviews</th></tr></thead>
+  <tbody>${bwRows(worst5,'#dc2626')}</tbody></table>
+</section>
+<div class="footer">Báo cáo tự động · Trending Pants Products Dashboard · Xuất lúc ${ts}</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+
+  const w = window.open('','_blank','width=900,height=700');
+  if (w) { w.document.write(html); w.document.close(); }
+  else alert('Vui lòng cho phép popup để xuất báo cáo.');
+}
 </script>
 </body>
 </html>
