@@ -182,7 +182,7 @@
         <span>&#x1F50D; &ldquo;wide leg pants&rdquo; = 95,000+ searches/week</span>
       </div>
     </div>
-    <button onclick="exportReport()" style="background:rgba(255,255,255,0.18);color:white;border:1.5px solid rgba(255,255,255,0.55);padding:10px 20px;border-radius:24px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;margin-top:4px" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">📋 Export Report</button>
+    <button onclick="exportReport(this)" style="background:rgba(255,255,255,0.18);color:white;border:1.5px solid rgba(255,255,255,0.55);padding:10px 20px;border-radius:24px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .2s;margin-top:4px" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">📋 Export Report</button>
   </div>
 </div>
 
@@ -994,8 +994,88 @@ window.addEventListener('DOMContentLoaded', () => {
   buildCharts();
 });
 
-// ── Export Report ──────────────────────────────────────
-function exportReport() {
+// ── Export Report (full dashboard screenshot → PDF) ────
+async function exportReport(btn) {
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '⏳ Đang xuất...';
+  btn.disabled = true;
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const u = new Date(now.getTime() + 7*3600000);
+  const ts = `${pad(u.getUTCDate())}/${pad(u.getUTCMonth()+1)}/${u.getUTCFullYear()} ${pad(u.getUTCHours())}:${pad(u.getUTCMinutes())}:${pad(u.getUTCSeconds())} (GMT+7)`;
+  const fileTs = `${u.getUTCFullYear()}${pad(u.getUTCMonth()+1)}${pad(u.getUTCDate())}_${pad(u.getUTCHours())}${pad(u.getUTCMinutes())}`;
+
+  const loadScript = url => new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${url}"]`) && (url.includes('html2canvas') ? window.html2canvas : window.jspdf)) { res(); return; }
+    const s = document.createElement('script');
+    s.src = url; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+
+  try {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+    // Timestamp banner injected at top of body
+    const banner = document.createElement('div');
+    banner.id = '_pdf_banner';
+    banner.style.cssText = 'width:100%;background:linear-gradient(135deg,#1e3a5f,#2d6a8f);color:#fff;text-align:center;padding:11px 16px;font-size:14px;font-weight:700;font-family:Segoe UI,Arial,sans-serif;letter-spacing:.3px;flex-shrink:0';
+    banner.textContent = `📋 Pants Dashboard Report  —  Thời điểm xuất: ${ts}`;
+    document.body.insertBefore(banner, document.body.firstChild);
+    window.scrollTo(0, 0);
+
+    const body = document.body;
+    const fullW = Math.max(body.scrollWidth, document.documentElement.scrollWidth, 1400);
+    const fullH = Math.max(body.scrollHeight, document.documentElement.scrollHeight);
+
+    btn.innerHTML = '📸 Đang chụp...';
+    const canvas = await window.html2canvas(body, {
+      scale: 1.5,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      x: 0, y: 0,
+      scrollX: 0, scrollY: 0,
+      width: fullW,
+      height: fullH,
+      windowWidth: fullW,
+      windowHeight: fullH,
+      backgroundColor: '#ffffff',
+      onclone: doc => { doc.body.style.overflow = 'visible'; }
+    });
+
+    banner.remove();
+
+    btn.innerHTML = '📄 Tạo PDF...';
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = 210, pageH = 297;
+    const ratio = canvas.width / pageW;
+    const imgH = canvas.height / ratio;
+    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+
+    let sliceTop = 0;
+    while (sliceTop < imgH) {
+      if (sliceTop > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, -sliceTop, pageW, imgH);
+      sliceTop += pageH;
+    }
+
+    pdf.save(`pants-dashboard-report-${fileTs}.pdf`);
+
+  } catch(e) {
+    document.getElementById('_pdf_banner')?.remove();
+    alert('Xuất PDF thất bại: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.innerHTML = origHTML;
+    btn.disabled = false;
+  }
+}
+
+// ── Legacy summary report (kept for reference) ────────
+function exportReportSummary() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   const u = new Date(now.getTime() + 7*3600000);
