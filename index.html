@@ -1053,6 +1053,17 @@ async function exportReport(btn) {
         doc.body.style.setProperty('width',     RENDER_W + 'px', 'important');
         doc.body.style.overflow = 'visible';
         doc.documentElement.style.overflow = 'visible';
+        doc.querySelectorAll('img').forEach(img => {
+          const src = img.getAttribute('src') || '';
+          const w = img.style.width;
+          const h = img.style.height;
+          if (!src || src.startsWith('data:') || !w || !h) return;
+          const fit = img.style.objectFit || 'contain';
+          const div = doc.createElement('div');
+          div.style.cssText = 'width:'+w+';height:'+h+';background-size:'+(fit==='cover'?'cover':'contain')+';background-position:center center;background-repeat:no-repeat;background-color:#f8f5f9;display:block;flex-shrink:0;';
+          div.style.backgroundImage = 'url(' + JSON.stringify(src) + ')';
+          img.parentNode.replaceChild(div, img);
+        });
       }
     });
 
